@@ -23,6 +23,18 @@ namespace SecureWebsitePractices2
         {
             Response.Redirect("Search.aspx?q=" + SearchTerm.Text);
         }
-    
+
+        //Error page
+        protected override void OnError(EventArgs e)
+        {
+            if (Server.GetLastError().GetBaseException() is System.Web.HttpRequestValidationException)
+            {
+                Response.Clear();
+                Response.Write("Error! ");
+                Response.Write("Invalid characters entered. Please go back to try again.");
+                Response.StatusCode = 200;
+                Response.End();
+            }
+        }
     }
 }
