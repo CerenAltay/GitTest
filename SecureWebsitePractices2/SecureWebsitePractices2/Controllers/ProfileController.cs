@@ -22,13 +22,14 @@ namespace SecureWebsitePractices2.Controllers
 
             if (!User.Identity.IsAuthenticated)
             {
-                // throw new ApplicationException("User not authenticated");
+                AuditEntry(User.Identity.Name, "User not authenticated", "Authentication failed");
+                                       
                 return RedirectToAction("Index", "Home");
             }
 
             else if (userName != null && User.Identity.Name != userName)
             {
-               // throw new ApplicationException("User not authorised");
+                AuditEntry(User.Identity.Name, "User not authenticated", "Unauthiorized access request");
 
                 return RedirectToAction("Index", "Home");
             }
@@ -174,5 +175,22 @@ namespace SecureWebsitePractices2.Controllers
         //    },
         //      JsonRequestBehavior.AllowGet);
         //}
+
+
+        protected void AuditEntry(string user, string message, string severity)
+        {
+            AuditModel audit = new AuditModel();
+            using (UserContext context = new UserContext())
+            {
+
+                audit.User = user;
+                audit.Message = message;
+                audit.Severity = severity;
+
+                audit = context.Audits.Add(audit);
+                context.SaveChanges();
+
+            }
+        }
     }
 }

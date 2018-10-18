@@ -102,7 +102,7 @@ else if (ViewBag.Username != null)
             $("#loadButton").click(function () {
       $('#loader').fadeIn('slow');
 
-        //Authorisation 2-> indirect ref
+        //Authorisation changed to indirect reference
             $.get('Profile/GetProfile?id=@User.Identity.Name.GetIndirectReference()', function (data) {
             $('#userName').text(data.UserName);
             $('#name').text(data.Name);
