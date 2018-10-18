@@ -111,44 +111,49 @@ namespace SecureWebsitePractices2.Controllers
         //}
 
 
-        //SQL 1 --> Parameterisation
+        //SQL 1 --> Parameterisation      
         /*
-        public List<ProductModel> GetProductsId(string prodID)
+public List<ProductModel> GetProductsId(string prodID)
+{
+    var result = new List<ProductModel>();
+    try
+    {
+        //added productKey parameter
+        string productKey = prodID;
+        var sqlString = "SELECT * FROM Product WHERE ProductKey = @ProductKey";
+
+        var connString = WebConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+        using (var conn = new SqlConnection(connString))
         {
-            var result = new List<ProductModel>();
+            var command = new SqlCommand(sqlString, conn);
 
-            //added productKey parameter
-            string productKey = prodID;
-            var sqlString = "SELECT * FROM Product WHERE ProductKey = @ProductKey";
+            //input value assigned to the parameter
+            SqlParameter key = command.Parameters.AddWithValue("@ProductKey", productKey);
 
-            var connString = WebConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-            using (var conn = new SqlConnection(connString))
+            command.Connection.Open();
+            using (SqlDataReader reader = command.ExecuteReader())
             {
-                var command = new SqlCommand(sqlString, conn);
-
-                //input value assigned to the parameter
-                SqlParameter key = command.Parameters.AddWithValue("@ProductKey", productKey);
-
-                command.Connection.Open();
-                using (SqlDataReader reader = command.ExecuteReader())
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
 
-                        ProductModel Products = new ProductModel();
+                    ProductModel Products = new ProductModel();
 
-                        Products.ProductKey = reader.GetInt32(0).ToString();
-                        Products.ProductAlternateKey = reader.GetString(1);
-                        Products.ProductName = reader.GetString(5);
-                        Products.StockLevel = reader.GetInt16(9);
+                    Products.ProductKey = reader.GetInt32(0).ToString();
+                    Products.ProductAlternateKey = reader.GetString(1);
+                    Products.ProductName = reader.GetString(5);
+                    Products.StockLevel = reader.GetInt16(9);
 
-                        result.Add(Products);
-                    }
+                    result.Add(Products);
                 }
             }
-            return result;
         }
-        */
+    } catch (Exception ex)
+    {
+        AuditEntry(User.Identity.Name, "Invalid input format", "SQL injection threat");
+    }
+    return result;
+}
+   */
 
         //--> SQL 2-Stored Procedures
         /*
@@ -290,6 +295,22 @@ namespace SecureWebsitePractices2.Controllers
             }
             //result = Products.Any(m => m.ProductName.Contains("Products.Searched, StringComparison.OrdinalIgnoreCase") >=0);//"SELECT * FROM Product WHERE ProductName = " + Products.Searched;
             return result;
+        }
+
+        protected void AuditEntry(string user, string message, string severity)
+        {
+            AuditModel audit = new AuditModel();
+            using (UserContext context = new UserContext())
+            {
+
+                audit.User = user;
+                audit.Message = message;
+                audit.Severity = severity;
+
+                audit = context.Audits.Add(audit);
+                context.SaveChanges();
+
+            }
         }
     }
 

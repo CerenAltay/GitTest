@@ -55,6 +55,10 @@ namespace SecureWebsitePractices2
         //-->Html output encoding and Regex
         protected void Page_Load(object sender, EventArgs e)
         {
+            #region
+            var user = "TestUser2";
+            #endregion
+
             var searchTerm = Request.QueryString["q"];
             var result = new List<ProductModel>();
 
@@ -65,13 +69,13 @@ namespace SecureWebsitePractices2
 
                 //added Regex
                 if (!Regex.IsMatch(searchTerm, @"^[a-zA-Z0-9 \.\-\,]+$"))
-                {
+                {                 
                     throw new HttpRequestValidationException("Input characters not allowed.");
                 }
-
             }
             catch (Exception ex)
             {
+                AuditEntry(user, ex.Message, "XSS security threat");
                 SearchGrid.DataBind();
             }
 
@@ -102,6 +106,22 @@ namespace SecureWebsitePractices2
             SearchGrid.DataSource = result.Where(p => p.ProductName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0);
            
             SearchGrid.DataBind();
+        }
+
+        protected void AuditEntry(string user, string message, string severity)
+        {
+            AuditModel audit = new AuditModel();
+            using (UserContext context = new UserContext())
+            {
+          
+                audit.User = user;
+                audit.Message = message;
+                audit.Severity = severity;
+
+                audit = context.Audits.Add(audit);
+                context.SaveChanges();
+
+            }
         }
     }
 }
