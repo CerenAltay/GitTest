@@ -60,14 +60,14 @@ namespace SecureWebsitePractices2
 
             try
             {
-                //XSS 2-> added Regex
+                //added XSS HTML encoder
+                SearchTerm.Text = AntiXssEncoder.HtmlEncode(searchTerm, true);
+
+                //added Regex
                 if (!Regex.IsMatch(searchTerm, @"^[a-zA-Z0-9 \.\-\,]+$"))
                 {
-                    throw new ApplicationException("Input characters not allowed.");
+                    throw new HttpRequestValidationException("Input characters not allowed.");
                 }
-
-                //XSS 1-> added XSS encoder
-                SearchTerm.Text = AntiXssEncoder.HtmlEncode(searchTerm, true);
 
             }
             catch (Exception ex)
